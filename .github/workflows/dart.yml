@@ -1,0 +1,79 @@
+name: build dart android sdk
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: prepare environment
+        run: |
+          # https://stackoverflow.com/questions/55940544/getting-user-config-git-attributes-permission-denied-but-git-doesnt-exis
+          sudo chown -R $USER:$USER ~/.config
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          # https://help.github.com/en/actions/reference/development-tools-for-github-actions#add-a-system-path-add-path
+          echo "::add-path::$PWD/depot_tools"
+
+      - name: install cross-compiling tools
+        run: |
+          # https://github.com/dart-lang/sdk/wiki/Building
+          sudo apt-get update -y
+          sudo apt-get install -y g++-arm-linux-gnueabihf  # For 32-bit ARM (ARMv7)
+          sudo apt-get install -y g++-aarch64-linux-gnu    # For 64-bit ARM
+          sudo apt-get install -y g++-multilib python curl
+
+      - name: fetch dart-sdk
+        run: |
+          mkdir dart-sdk
+          cd dart-sdk
+          fetch dart > /dev/null
+
+      - name: sync android specific code
+        run: |
+          cd dart-sdk
+          cat .gclient
+          # https://github.com/dart-lang/sdk/wiki/Building-Dart-SDK-for-Android
+          echo target_os = [\'android\'] >> .gclient
+          cat .gclient
+          gclient sync > /dev/null
+
+      - name: borrow some /mnt space for building
+        run: |
+          cd dart-sdk/sdk
+          sudo mkdir /mnt/out
+          sudo chown -R $USER:$USER /mnt/out
+          ln -s /mnt/out out
+          df -h
+
+      - name: build android
+        run: |
+          cd dart-sdk/sdk
+          tools/build.py -m release -a arm,arm64,ia32,x64 --os=android create_sdk | tee log.txt
+          
+      - name: prepare prebuilt files
+        run: |
+          cd dart-sdk/sdk
+          cp -r out/ReleaseAndroidARM/dart-sdk android-arm-dart-sdk
+          cp -r out/ReleaseAndroidARM64/dart-sdk android-arm64-dart-sdk 
+          cp -r out/ReleaseAndroidIA32/dart-sdk android-ia32-dart-sdk
+          cp -r out/ReleaseAndroidX64/dart-sdk android-x64-dart-sdk
+          tar -cJf android-arm-dart-sdk.tar.xz android-arm-dart-sdk
+          tar -cJf android-arm64-dart-sdk.tar.xz android-arm64-dart-sdk 
+          tar -cJf android-ia32-dart-sdk.tar.xz android-ia32-dart-sdk
+          tar -cJf android-x64-dart-sdk.tar.xz android-x64-dart-sdk
+
+      - uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: dart-sdk/sdk/*.tar.xz
+          tags: true
+          draft: false

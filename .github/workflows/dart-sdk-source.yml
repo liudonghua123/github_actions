@@ -1,0 +1,59 @@
+name: download dart android sdk
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: prepare environment
+        run: |
+          # https://stackoverflow.com/questions/55940544/getting-user-config-git-attributes-permission-denied-but-git-doesnt-exis
+          sudo chown -R $USER:$USER ~/.config
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          # https://help.github.com/en/actions/reference/development-tools-for-github-actions#add-a-system-path-add-path
+          echo "::add-path::$PWD/depot_tools"
+
+      - name: fetch dart-sdk
+        run: |
+          mkdir dart-sdk
+          cd dart-sdk
+          fetch dart > /dev/null
+
+      - name: sync android specific code
+        run: |
+          cd dart-sdk
+          cat .gclient
+          # https://github.com/dart-lang/sdk/wiki/Building-Dart-SDK-for-Android
+          echo target_os = [\'android\'] >> .gclient
+          cat .gclient
+          gclient sync > /dev/null
+
+      - name: borrow some /mnt space for compress sdk source
+        run: |
+          sudo mkdir /mnt/out
+          sudo chown -R $USER:$USER /mnt/out
+          ln -s /mnt/out out
+
+      - name: prepare upload assets
+        run: |
+          tar -cJvf out/depot_tools.tar.xz depot_tools
+          tar -cJvf out/dart-sdk.tar.xz dart-sdk
+          cd out
+          split -b 1024M dart-sdk.tar.xz "dart-sdk.tar.xz.part"
+
+      - uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: out/depot_tools.tar.xz;out/dart-sdk.tar.xz.part*
+          tags: true
+          draft: false
