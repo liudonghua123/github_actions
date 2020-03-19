@@ -10,7 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    # https://github.community/t5/GitHub-Actions/run-step-on-if-branch-tag-is/td-p/38874
+    # check whether the push is tags
+    if: contains(github.ref, 'tags')
     steps:
       - uses: actions/checkout@v1
 
@@ -72,7 +74,7 @@ jobs:
 
       - uses: xresloader/upload-to-github-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
           file: dart-sdk/sdk/*.tar.xz
           tags: true

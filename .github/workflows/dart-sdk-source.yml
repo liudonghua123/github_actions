@@ -10,7 +10,7 @@ on:
 jobs:
   download:
     runs-on: ubuntu-latest
-
+    if: contains(github.ref, 'tags')
     steps:
       - uses: actions/checkout@v1
 
@@ -52,7 +52,7 @@ jobs:
 
       - uses: xresloader/upload-to-github-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
           file: out/depot_tools.tar.xz;out/dart-sdk.tar.xz.part*
           tags: true
