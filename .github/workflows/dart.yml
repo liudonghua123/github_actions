@@ -58,7 +58,7 @@ jobs:
       - name: build android
         run: |
           cd dart-sdk/sdk
-          tools/build.py -m release -a arm,arm64,ia32,x64 --os=android create_sdk | tee log.txt
+          tools/build.py -m all -a arm,arm64,ia32,x64 --os=android create_sdk | tee log.txt
 
       - name: prepare prebuilt files
         run: |
