@@ -22,7 +22,8 @@ jobs:
           sudo chown -R $USER:$USER ~/.config
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
           # https://help.github.com/en/actions/reference/development-tools-for-github-actions#add-a-system-path-add-path
-          echo "::add-path::$PWD/depot_tools"
+          # echo "::add-path::$PWD/depot_tools"
+          echo "$PWD/depot_tools" >> $GITHUB_PATH
 
       - name: install cross-compiling tools
         run: |
