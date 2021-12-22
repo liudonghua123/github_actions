@@ -61,6 +61,17 @@ jobs:
           cd dart-sdk/sdk
           tools/build.py -m all -a arm,arm64,ia32,x64 --os=android create_sdk | tee log.txt
 
+      - name: check the out files step 1
+        run: |
+          cd dart-sdk/sdk
+          ls -lR .
+
+      - name: check the out files step 2
+        run: |
+          cd dart-sdk/sdk
+          sudo apt install -y tree
+          tree 
+
       - name: prepare prebuilt files
         run: |
           cd dart-sdk/sdk
