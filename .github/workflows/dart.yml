@@ -59,7 +59,13 @@ jobs:
       - name: build android
         run: |
           cd dart-sdk/sdk
-          tools/build.py -m all -a arm,arm64,ia32,x64 --os=android create_sdk | tee log.txt
+          # https://github.com/dart-lang/sdk/wiki/Building#building
+          # Build the 64-bit SDK:
+          tools/build.py --no-goma --mode release --arch x64 create_sdk | tee log.txt
+          # Build the 32-bit SDK:
+          tools/build.py --no-goma --mode release --arch ia32 create_sdk | tee log.txt
+          # https://github.com/dart-lang/sdk/wiki/Building-the-Dart-VM-for-Android#building-for-android
+          tools/build.py --no-goma --arch=arm,arm64,ia32,x64 --os=android create_sdk | tee log.txt
 
       - name: check the out files step 1
         run: |
@@ -107,6 +113,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
-          file: dart-sdk/sdk/*-dart-sdk.tar.xz;dart-sdk/sdk/*-dart-sdk-debug.tar.xz;dart-sdk/sdk/*-dart-sdk-product.tar.xz
+          file: dart-sdk/sdk/log.txt;dart-sdk/sdk/*-dart-sdk.tar.xz;dart-sdk/sdk/*-dart-sdk-debug.tar.xz;dart-sdk/sdk/*-dart-sdk-product.tar.xz
           tags: true
           draft: false
