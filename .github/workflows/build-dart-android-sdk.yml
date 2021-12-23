@@ -8,7 +8,7 @@ on:
       - '*'
 
 jobs:
-  build:
+  build-dart-android-sdk:
     runs-on: ubuntu-latest
     # https://github.community/t5/GitHub-Actions/run-step-on-if-branch-tag-is/td-p/38874
     # check whether the push is tags

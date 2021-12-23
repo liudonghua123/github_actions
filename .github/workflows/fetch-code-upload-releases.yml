@@ -1,4 +1,4 @@
-name: download dart android sdk
+name: fetch-code-upload-releases
 
 on:
   push:
