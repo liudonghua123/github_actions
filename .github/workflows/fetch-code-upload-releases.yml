@@ -55,12 +55,14 @@ jobs:
       - name: add depot_tools to path
         run: |
           echo "$PWD/depot_tools" >> $GITHUB_PATH
+          echo $GITHUB_PATH
           cat $GITHUB_PATH
 
       - name: add depot_tools to path on windows 
         if: matrix.os == 'windows-latest'
         run: |
           echo %CD%\depot_tools>> %GITHUB_PATH%
+          echo %GITHUB_PATH%
           cat %GITHUB_PATH%
         shell: cmd
 
@@ -76,38 +78,72 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           echo %PATH%
-          call gclient
+          set DEPOT_TOOLS_WIN_TOOLCHAIN=0
+          set vs2019_install=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
           where python
+          call python -V
+          call gclient
           mkdir dart-sdk
           cd dart-sdk
           call fetch dart
         shell: cmd
 
-      - name: sync android specific code
+      - name: set target_os android
         run: |
-          cd dart-sdk
           cat .gclient
           # https://github.com/dart-lang/sdk/wiki/Building-Dart-SDK-for-Android
           echo target_os = [\'android\'] >> .gclient
           cat .gclient
-          gclient sync > /dev/null
+        working-directory: dart-sdk
 
-      - name: borrow some /mnt space for compress sdk source
-        if: matrix.os != 'windows-latest'
-        run: |
-          pwd
-          sudo mkdir /mnt/out
-          sudo chown -R $USER /mnt/out
-          ln -s /mnt/out out
-          du -sh out/*
-
-      - name: borrow some /mnt space for compress sdk source
+      - name: sync code
         if: matrix.os == 'windows-latest'
         run: |
+          echo %PATH%
+          set DEPOT_TOOLS_WIN_TOOLCHAIN=0
+          set vs2019_install=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
+          where python
+          call python -V
+          call gclient sync
+        shell: cmd
+        working-directory: dart-sdk
+
+      - name: sync code
+        if: matrix.os != 'windows-latest'
+        run: |
+          echo $PATH
+          which python
+          python -V
+          gclient sync > /dev/null
+        working-directory: dart-sdk
+
+      # - name: borrow some /mnt space for compress sdk source
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: |
+      #     pwd
+      #     ls -l
+      #     df -h
+      #     sudo mkdir /mnt/out
+      #     sudo chown -R $USER /mnt/out
+      #     ln -s /mnt/out out
+      #     du -sh *
+
+      # - name: borrow some /mnt space for compress sdk source
+      #   if: matrix.os != 'ubuntu-latest'
+      #   run: |
+      #     pwd
+      #     ls -l
+      #     df -h
+      #     mkdir out
+      #     du -sh *
+
+      - name: prepare
+        run: |
           pwd
-          mkdir /mnt/out
-          ln -s /mnt/out out
-          du -sh out/*
+          ls -l
+          df -h
+          mkdir out
+          du -sh *
 
       - name: prepare upload assets
         run: |
