@@ -30,19 +30,58 @@ jobs:
       - name: prepare environment
         run: |
           # https://stackoverflow.com/questions/55940544/getting-user-config-git-attributes-permission-denied-but-git-doesnt-exis
-          sudo chown -R $USER:$USER ~/.config
-          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          # https://stackoverflow.com/questions/57946173/github-actions-run-step-on-specific-os
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            id
+            sudo chown -R $USER ~/.config
+            git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            id
+            git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+            echo ok
+          else
+            echo ok
+            choco install wget
+            # https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_get_depot_tools
+            wget https://storage.googleapis.com/chrome-infra/depot_tools.zip
+            unzip depot_tools.zip -d depot_tools || true
+          fi
           # https://help.github.com/en/actions/reference/development-tools-for-github-actions#add-a-system-path-add-path
           # https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/
           # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#adding-a-system-path
           # echo "::add-path::$PWD/depot_tools"
+          # echo "$PWD/depot_tools" >> $GITHUB_PATH
+
+      - name: add depot_tools to path
+        run: |
           echo "$PWD/depot_tools" >> $GITHUB_PATH
+          cat $GITHUB_PATH
+
+      - name: add depot_tools to path on windows 
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo %CD%\depot_tools>> %GITHUB_PATH%
+          cat %GITHUB_PATH%
+        shell: cmd
 
       - name: fetch dart-sdk
+        if: matrix.os != 'windows-latest'
         run: |
+          echo $PATH
           mkdir dart-sdk
           cd dart-sdk
           fetch dart > /dev/null
+
+      - name: fetch dart-sdk
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo %PATH%
+          call gclient
+          where python
+          mkdir dart-sdk
+          cd dart-sdk
+          call fetch dart
+        shell: cmd
 
       - name: sync android specific code
         run: |
@@ -54,10 +93,19 @@ jobs:
           gclient sync > /dev/null
 
       - name: borrow some /mnt space for compress sdk source
+        if: matrix.os != 'windows-latest'
         run: |
           pwd
           sudo mkdir /mnt/out
-          sudo chown -R $USER:$USER /mnt/out
+          sudo chown -R $USER /mnt/out
+          ln -s /mnt/out out
+          du -sh out/*
+
+      - name: borrow some /mnt space for compress sdk source
+        if: matrix.os == 'windows-latest'
+        run: |
+          pwd
+          mkdir /mnt/out
           ln -s /mnt/out out
           du -sh out/*
 
