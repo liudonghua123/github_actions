@@ -8,9 +8,22 @@ on:
       - "*"
 
 jobs:
-  download:
-    runs-on: ubuntu-latest
+  fetch-code-upload-releases:
+    runs-on: ${{matrix.os}}
     if: contains(github.ref, 'tags')
+    defaults:
+      run:
+        shell: bash    
+    strategy:
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+        include:
+          - os: 'ubuntu-latest'
+            label: 'linux'
+          - os: 'macos-latest'
+            label: 'macos'
+          - os: 'windows-latest'
+            label: 'windows'
     steps:
       - uses: actions/checkout@v1
 
@@ -42,21 +55,21 @@ jobs:
 
       - name: borrow some /mnt space for compress sdk source
         run: |
+          pwd
           sudo mkdir /mnt/out
           sudo chown -R $USER:$USER /mnt/out
           ln -s /mnt/out out
+          du -sh out/*
 
       - name: prepare upload assets
         run: |
-          tar -cJvf out/depot_tools.tar.xz depot_tools
-          tar -cJvf out/dart-sdk.tar.xz dart-sdk
-          cd out
-          split -b 1024M dart-sdk.tar.xz "dart-sdk.tar.xz.part"
+          7z a out/depot_tools-${{matrix.label}}.7z depot_tools
+          7z -v1g a out/dart-sdk-${{matrix.label}}.7z dart-sdk
 
       - uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
-          file: out/depot_tools.tar.xz;out/dart-sdk.tar.xz.part*
+          file: out/depot_tools-${{matrix.label}}.7z;out/dart-sdk-${{matrix.label}}.7z*
           tags: true
           draft: false
