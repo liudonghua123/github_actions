@@ -70,40 +70,40 @@ jobs:
       - name: check the out files step 1
         run: |
           cd dart-sdk/sdk
-          ls -lR .
+          ls -lRH .
 
       - name: check the out files step 2
         run: |
           cd dart-sdk/sdk
           sudo apt install -y tree
-          tree 
+          tree -l
 
       - name: prepare prebuilt files
         run: |
           cd dart-sdk/sdk
           # release mode
-          cp -r out/ReleaseAndroidARM/dart-sdk android-arm-dart-sdk
-          cp -r out/ReleaseAndroidARM64/dart-sdk android-arm64-dart-sdk 
-          cp -r out/ReleaseAndroidIA32/dart-sdk android-ia32-dart-sdk
-          cp -r out/ReleaseAndroidX64/dart-sdk android-x64-dart-sdk
+          cp -r out/android/ReleaseAndroidARM/dart-sdk android-arm-dart-sdk
+          cp -r out/android/ReleaseAndroidARM64/dart-sdk android-arm64-dart-sdk 
+          cp -r out/android/ReleaseAndroidIA32/dart-sdk android-ia32-dart-sdk
+          cp -r out/android/ReleaseAndroidX64/dart-sdk android-x64-dart-sdk
           tar -cJf android-arm-dart-sdk.tar.xz android-arm-dart-sdk
           tar -cJf android-arm64-dart-sdk.tar.xz android-arm64-dart-sdk 
           tar -cJf android-ia32-dart-sdk.tar.xz android-ia32-dart-sdk
           tar -cJf android-x64-dart-sdk.tar.xz android-x64-dart-sdk
           # debug mode
-          cp -r out/DebugAndroidARM/dart-sdk android-arm-dart-sdk-debug
-          cp -r out/DebugAndroidARM64/dart-sdk android-arm64-dart-sdk-debug 
-          cp -r out/DebugAndroidIA32/dart-sdk android-ia32-dart-sdk-debug
-          cp -r out/DebugAndroidX64/dart-sdk android-x64-dart-sdk-debug
+          cp -r out/android/DebugAndroidARM/dart-sdk android-arm-dart-sdk-debug
+          cp -r out/android/DebugAndroidARM64/dart-sdk android-arm64-dart-sdk-debug 
+          cp -r out/android/DebugAndroidIA32/dart-sdk android-ia32-dart-sdk-debug
+          cp -r out/android/DebugAndroidX64/dart-sdk android-x64-dart-sdk-debug
           tar -cJf android-arm-dart-sdk-debug.tar.xz android-arm-dart-sdk-debug
           tar -cJf android-arm64-dart-sdk-debug.tar.xz android-arm64-dart-sdk-debug 
           tar -cJf android-ia32-dart-sdk-debug.tar.xz android-ia32-dart-sdk-debug
           tar -cJf android-x64-dart-sdk-debug.tar.xz android-x64-dart-sdk-debug
           # product mode
-          cp -r out/ProductAndroidARM/dart-sdk android-arm-dart-sdk-product
-          cp -r out/ProductAndroidARM64/dart-sdk android-arm64-dart-sdk-product
-          cp -r out/ProductAndroidIA32/dart-sdk android-ia32-dart-sdk-product
-          cp -r out/ProductAndroidX64/dart-sdk android-x64-dart-sdk-product
+          cp -r out/android/ProductAndroidARM/dart-sdk android-arm-dart-sdk-product
+          cp -r out/android/ProductAndroidARM64/dart-sdk android-arm64-dart-sdk-product
+          cp -r out/android/ProductAndroidIA32/dart-sdk android-ia32-dart-sdk-product
+          cp -r out/android/ProductAndroidX64/dart-sdk android-x64-dart-sdk-product
           tar -cJf android-arm-dart-sdk-product.tar.xz android-arm-dart-sdk-product
           tar -cJf android-arm64-dart-sdk-product.tar.xz android-arm64-dart-sdk-product 
           tar -cJf android-ia32-dart-sdk-product.tar.xz android-ia32-dart-sdk-product
