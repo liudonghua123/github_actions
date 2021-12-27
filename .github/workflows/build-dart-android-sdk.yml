@@ -65,7 +65,7 @@ jobs:
           # Build the 32-bit SDK:
           tools/build.py --no-goma --mode release --arch ia32 create_sdk | tee log.txt
           # https://github.com/dart-lang/sdk/wiki/Building-the-Dart-VM-for-Android#building-for-android
-          tools/build.py --no-goma --arch=arm,arm64,ia32,x64 --os=android create_sdk | tee log.txt
+          tools/build.py --no-goma --mode all --arch=arm,arm64,ia32,x64 --os=android create_sdk | tee log.txt
 
       - name: check the out files step 1
         run: |
@@ -77,42 +77,43 @@ jobs:
           cd dart-sdk/sdk
           sudo apt install -y tree
           tree -l
+          tree -l -s -J > sdk-tree.json
+          tree -l -H "" > sdk-tree.html
 
       - name: prepare prebuilt files
         run: |
           cd dart-sdk/sdk
           # release mode
-          cp -r out/android/ReleaseAndroidARM/dart-sdk android-arm-dart-sdk
-          cp -r out/android/ReleaseAndroidARM64/dart-sdk android-arm64-dart-sdk 
-          cp -r out/android/ReleaseAndroidIA32/dart-sdk android-ia32-dart-sdk
-          cp -r out/android/ReleaseAndroidX64/dart-sdk android-x64-dart-sdk
-          tar -cJf android-arm-dart-sdk.tar.xz android-arm-dart-sdk
-          tar -cJf android-arm64-dart-sdk.tar.xz android-arm64-dart-sdk 
-          tar -cJf android-ia32-dart-sdk.tar.xz android-ia32-dart-sdk
-          tar -cJf android-x64-dart-sdk.tar.xz android-x64-dart-sdk
+          cp -r out/ReleaseAndroidARM/dart-sdk android-arm-dart-sdk-release
+          cp -r out/ReleaseAndroidARM64/dart-sdk android-arm64-dart-sdk-release 
+          cp -r out/ReleaseAndroidIA32/dart-sdk android-ia32-dart-sdk-release
+          cp -r out/ReleaseAndroidX64/dart-sdk android-x64-dart-sdk-release
+          cp -r out/ReleaseIA32/dart-sdk linux-ia32-dart-sdk-release
+          cp -r out/ReleaseX64/dart-sdk linux-x64-dart-sdk-release
+          tar -cJf android-arm-dart-sdk-release.tar.xz android-arm-dart-sdk-release
+          tar -cJf android-arm64-dart-sdk-release.tar.xz android-arm64-dart-sdk-release 
+          tar -cJf android-ia32-dart-sdk-release.tar.xz android-ia32-dart-sdk-release
+          tar -cJf android-x64-dart-sdk-release.tar.xz android-x64-dart-sdk-release
+          tar -cJf linux-ia32-dart-sdk-release.tar.xz linux-ia32-dart-sdk-release
+          tar -cJf linux-x64-dart-sdk-release.tar.xz linux-x64-dart-sdk-release
           # debug mode
-          cp -r out/android/DebugAndroidARM/dart-sdk android-arm-dart-sdk-debug
-          cp -r out/android/DebugAndroidARM64/dart-sdk android-arm64-dart-sdk-debug 
-          cp -r out/android/DebugAndroidIA32/dart-sdk android-ia32-dart-sdk-debug
-          cp -r out/android/DebugAndroidX64/dart-sdk android-x64-dart-sdk-debug
+          cp -r out/DebugAndroidARM/dart-sdk android-arm-dart-sdk-debug
+          cp -r out/DebugAndroidARM64/dart-sdk android-arm64-dart-sdk-debug 
+          cp -r out/DebugAndroidIA32/dart-sdk android-ia32-dart-sdk-debug
+          cp -r out/DebugAndroidX64/dart-sdk android-x64-dart-sdk-debug
+          cp -r out/DebugIA32/dart-sdk linux-ia32-dart-sdk-debug
+          cp -r out/DebugX64/dart-sdk linux-x64-dart-sdk-debug
           tar -cJf android-arm-dart-sdk-debug.tar.xz android-arm-dart-sdk-debug
           tar -cJf android-arm64-dart-sdk-debug.tar.xz android-arm64-dart-sdk-debug 
           tar -cJf android-ia32-dart-sdk-debug.tar.xz android-ia32-dart-sdk-debug
           tar -cJf android-x64-dart-sdk-debug.tar.xz android-x64-dart-sdk-debug
-          # product mode
-          cp -r out/android/ProductAndroidARM/dart-sdk android-arm-dart-sdk-product
-          cp -r out/android/ProductAndroidARM64/dart-sdk android-arm64-dart-sdk-product
-          cp -r out/android/ProductAndroidIA32/dart-sdk android-ia32-dart-sdk-product
-          cp -r out/android/ProductAndroidX64/dart-sdk android-x64-dart-sdk-product
-          tar -cJf android-arm-dart-sdk-product.tar.xz android-arm-dart-sdk-product
-          tar -cJf android-arm64-dart-sdk-product.tar.xz android-arm64-dart-sdk-product 
-          tar -cJf android-ia32-dart-sdk-product.tar.xz android-ia32-dart-sdk-product
-          tar -cJf android-x64-dart-sdk-product.tar.xz android-x64-dart-sdk-product
+          tar -cJf linux-ia32-dart-sdk-debug.tar.xz linux-ia32-dart-sdk-debug
+          tar -cJf linux-x64-dart-sdk-debug.tar.xz linux-x64-dart-sdk-debug
 
       - uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
-          file: dart-sdk/sdk/log.txt;dart-sdk/sdk/*-dart-sdk.tar.xz;dart-sdk/sdk/*-dart-sdk-debug.tar.xz;dart-sdk/sdk/*-dart-sdk-product.tar.xz
+          file: dart-sdk/sdk/log.txt;dart-sdk/sdk/sdk-tree.*;dart-sdk/sdk/*-dart-sdk-release.tar.xz;dart-sdk/sdk/*-dart-sdk-debug.tar.xz
           tags: true
           draft: false
